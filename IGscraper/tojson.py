@@ -1,10 +1,19 @@
 import json
 import pickle
 
-with open('data', 'rb') as fp:
-    itemList = pickle.load(fp)
+count=0
 
-# print(itemList)
-for item in itemList:
-    print('\n')
-    print(item)    
+for i in range(1,11):
+    if (i==1):
+        continue
+    
+    
+    with open(f'data{i}', 'rb') as fp:
+        itemList = pickle.load(fp)
+        print(i)    
+        for item in itemList:
+            count+=1
+            # print(item)
+            # print(' ')
+
+print(count)

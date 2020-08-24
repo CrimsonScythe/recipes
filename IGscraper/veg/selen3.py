@@ -52,7 +52,7 @@ def getUnit(root):
 
 
 
-def parserecipe(url, title,  img):
+def parserecipe(url, title, img):
     # driver.get('https://www.loveandlemons.com/black-bean-burger-recipe/')
     
     driver.get(url)
@@ -60,28 +60,16 @@ def parserecipe(url, title,  img):
     method = []
     i=1
     serveT=""
-    timeis=""
     id_global=0
     instructions=[]
     nutrition=[]
     
-    dates=driver.find_elements(By.TAG_NAME, 'meta')
-    month=0
-    for date in dates:
-        if date.get_attribute('property')=='article:published_time':
-            final = date.get_attribute('content')
     
-            # print(date)
-
-            fin = int(final[5:7])
-            month=fin
-
-# datetime.today().month-1 == month
     if (True):
         
 
         try:
-            elem=driver.find_element(By.CLASS_NAME, 'tasty-recipes-instructions').find_elements(By.TAG_NAME, 'li')
+            elem=driver.find_element(By.CLASS_NAME, 'instructions').find_elements(By.TAG_NAME, 'li')
             for e in elem:
                 print(e.text)
                 instructions.append(e.text)
@@ -90,46 +78,54 @@ def parserecipe(url, title,  img):
 
         try:
         
-            id = driver.find_element_by_xpath('//*[@id="content"]/div[1]/a').get_attribute("href")
-            ids=re.findall(r'\d+', id)
-            id=ids[0]
-            ingre = driver.find_element(By.CLASS_NAME, 'tasty-recipes-ingredients').find_elements(By.TAG_NAME, 'li')
+            # id = driver.find_element_by_xpath('//*[@id="content"]/div[1]/a').get_attribute("href")
+            # ids=re.findall(r'\d+', id)
+            # id=ids[0]
+            
+            # ingre = driver.find_element(By.CLASS_NAME, 'tasty-recipes-ingredients').find_elements(By.TAG_NAME, 'li')
+            ingre = driver.find_element(By.CLASS_NAME, 'ingredients').find_elements(By.TAG_NAME, 'li')
             # elems = driver.find_element(By.XPATH, f'//*[@id="tasty-recipes-{id}"]/div/div[1]').find_elements(By.TAG_NAME, 'li')
             for ing in ingre:
                 print(ing.text)
                 ingredients.append(ing.text)
 
-            serve=driver.find_element(By.CLASS_NAME, 'tasty-recipes-yield').find_elements(By.TAG_NAME, 'span')
-
-            
             # serve=driver.find_element_by_xpath(f'//*[@id="tasty-recipes-{id}"]/header/div[2]/div[2]/ul/li[4]/span[2]/span[1]')
-            serveT=serve[0].text
+            serve = driver.find_elements(By.TAG_NAME, 'span')
+            for s in serve:
+                if s.get_attribute('itemprop') == 'recipeYield':
+                    serveT = s.text[0]
             print(serveT)
-            # tim=driver.find_element_by_xpath(f'//*[@id="tasty-recipes-{id}"]/header/div[2]/div[2]/ul/li[3]/span[2]')
-            # timeis=tim.text
-            # //*[@id="tasty-recipes-71053"]/header/div[2]/div[2]/ul/li[4]/span[2]
-            # //*[@id="tasty-recipes-73229"]/header/div[2]/div[2]/ul/li[4]/span[2]
-            # //*[@id="tasty-recipes-71053"]/header/div[2]/div[2]/ul/li[4]/span[2]
+            ps = driver.find_elements(By.TAG_NAME, 'strong')
+            for p in ps:
+                if p.text== 'total time:':
+                    # print(p.text)
+                    sib=p.find_element(By.XPATH, 'following-sibling::*')
+                    # print(sib.text)
+                    timeis=sib.text
             
-            tim=driver.find_element(By.CLASS_NAME, 'tasty-recipes-total-time')
-            # tim=driver.find_element(By.CLASS_NAME, 'total-time').find_elements(By.TAG_NAME, 'span')
-            # tim=driver.find_element(By.CLASS_NAME, 'tasty-recipes-total-time')
-            timeis=tim.text
             print(timeis)
-        except:
-            # print(er)
-            return
+            ERR=False
+            isveg = driver.find_elements(By.CLASS_NAME, 'post-meta')
+            for l in isveg:
+                if 'ENTREE' in l.text:
+                    print(l.text)
+                else:
+                    ERR=True
 
-        
+            if ERR:
+                return
+
+        except:
+            return
 # //*[@id="tasty-recipes-73229"]/div/div[2]/ul/li[1]
         
 
         # print(img)
-        recipes.append([title, url, ingredients, serveT, img, instructions, nutrition, timeis, 'all'])
+        recipes.append([title, url, ingredients, serveT, img, instructions, nutrition, timeis, 'vegetarian'])
         # with open('data.txt', 'w') as outfile:
             # json.dump(recipes, outfile)
 
-        with open('data2', 'wb') as fp:
+        with open('data3', 'wb') as fp:
             pickle.dump(recipes, fp)   
 
     else:
@@ -192,16 +188,15 @@ with webdriver.Chrome("C:/WebDriver/bin/chromedriver.exe", options=options) as d
     recipes = []
     num=1
     
-    # https://www.gimmesomeoven.com/all-recipes/?fwp_course=main-course&fwp_per_page=100
+    
     while True:
 
-        # if len(recipes)==5:
+        # if len(recipes)==3:
         #     break
-
-        if num==4:
+        if num==6:
             break
 
-        driver.get('https://www.gimmesomeoven.com/all-recipes/?fwp_course=main-course&fwp_paged={num}&fwp_per_page=100')
+        driver.get(f'https://damndelicious.net/category/vegetarian/page/{num}')
         
         
         ERROR = False
@@ -212,9 +207,9 @@ with webdriver.Chrome("C:/WebDriver/bin/chromedriver.exe", options=options) as d
         
         # if 'visible'not in visibility:
         #     ERROR = True
-
         try:
-            title = driver.find_element_by_xpath(f'//*[@id="content"]/div[2]/div[{i}]/a').get_attribute('title')
+
+            title = driver.find_element_by_xpath(f'//*[@id="content"]/div[1]/div[{i}]/a/h4').text
             print(title)
         except:
             num+=1
@@ -235,11 +230,11 @@ with webdriver.Chrome("C:/WebDriver/bin/chromedriver.exe", options=options) as d
             i+=1
             continue
         
-        img = driver.find_element_by_xpath(f'//*[@id="content"]/div[2]/div[{i}]/a/img').get_attribute('src')
+        img = driver.find_element_by_xpath(f'//*[@id="content"]/div[1]/div[{i}]/a/img').get_attribute('src')
         # img = WebDriverWait(driver, 20).until(EC.visibility_of_element_located((By.XPATH, f'//*[@id="recipeindex"]/li[{i}]/a/div[1]/img'))).get_attribute("src")
 
         
-        parserecipe(driver.find_element_by_xpath(f'//*[@id="content"]/div[2]/div[{i}]/a').get_attribute('href'), title, img)
+        parserecipe(driver.find_element_by_xpath(f'//*[@id="content"]/div[1]/div[{i}]/a').get_attribute('href'),title, img)
         
         print("PARSED")
         
